@@ -2,14 +2,13 @@
 
 Sistema de orquestração distribuída para processar playlists e canais do YouTube usando Google Sheets como camada de coordenação.
 
-[![PyPI version](https://img.shields.io/pypi/v/yt-gsheet-orchestrator.svg)](https://pypi.org/project/yt-gsheet-orchestrator/)
-[![Python Support](https://img.shields.io/pypi/pyversions/yt-gsheet-orchestrator.svg)](https://pypi.org/project/yt-gsheet-orchestrator/)
-[![License](https://img.shields.io/github/license/AndreKoraleski/yt-gsheet-orchestrator.svg)](https://github.com/AndreKoraleski/yt-gsheet-orchestrator/blob/main/LICENSE)
-[![CI](https://github.com/AndreKoraleski/yt-gsheet-orchestrator/workflows/CI/badge.svg)](https://github.com/AndreKoraleski/yt-gsheet-orchestrator/actions)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 ---
 
-**📚 Documentação**: [Início Rápido](QUICKSTART.md) | [Exemplos](examples/) | [Deployment](DEPLOYMENT.md) | [Contribuindo](CONTRIBUTING.md) | [Changelog](CHANGELOG.md)
+**Documentação**: [Início Rápido](QUICKSTART.md) | [Exemplos](examples/) | [Deployment](DEPLOYMENT.md) | [Contribuindo](CONTRIBUTING.md) | [Changelog](CHANGELOG.md)
 
 ---
 
@@ -49,8 +48,8 @@ pip install yt-gsheet-orchestrator
 
 ```bash
 # Clone o repositório
-git clone https://github.com/AndreKoraleski/yt-gsheet-orchestrator.git
-cd yt-gsheet-orchestrator
+git clone https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator.git
+cd YT-G-Sheets-Orchestrator
 
 # Instale com dependências de desenvolvimento
 uv pip install -e ".[dev]"
@@ -189,36 +188,6 @@ Usa yt-dlp para extrair:
 - IDs de vídeo diretamente das URLs do YouTube (formato de 11 caracteres)
 - Nomes de playlists/canais e contagens de vídeos
 - Títulos e durações de vídeos individuais
-
-## Desenvolvimento
-
-### Executando Testes
-
-```bash
-# Executar todos os testes
-uv run pytest
-
-# Executar com relatório de coverage
-uv run pytest --cov=orc --cov-report=html
-```
-
-Cobertura de testes atual: 60% (94 testes)
-
-### Publicando no PyPI
-
-```bash
-# Instalar dependências de build
-uv pip install build twine
-
-# Criar build
-python -m build
-
-# Upload para Test PyPI (opcional)
-twine upload --repository testpypi dist/*
-
-# Upload para PyPI
-twine upload dist/*
-```
 
 ### Estrutura do Projeto
 

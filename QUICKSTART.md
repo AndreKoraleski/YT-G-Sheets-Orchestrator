@@ -147,10 +147,8 @@ O sistema automaticamente:
 
 ## Próximos Passos
 
-- 📖 Leia o [README.md](README.md) completo
-- 🚀 Veja [exemplos avançados](examples/)
-- 📦 Confira [guia de deployment](DEPLOYMENT.md)
-- 🔒 Revise [práticas de segurança](SECURITY.md)
+- Leia o [README.md](README.md) completo
+- Veja [exemplos avançados](examples/)
 
 ## Troubleshooting
 
@@ -177,4 +175,4 @@ O sistema automaticamente:
 
 ## Suporte
 
-Encontrou problemas? [Abra uma issue](https://github.com/AndreKoraleski/yt-gsheet-orchestrator/issues)!
+Encontrou problemas? [Abra uma issue](https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator/issues)!

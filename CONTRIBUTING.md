@@ -16,8 +16,8 @@ Obrigado por considerar contribuir para este projeto!
 
 ```bash
 # Clone o repositório
-git clone https://github.com/AndreKoraleski/yt-gsheet-orchestrator.git
-cd yt-gsheet-orchestrator
+git clone https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator.git
+cd YT-G-Sheets-Orchestrator
 
 # Instale dependências de desenvolvimento
 uv pip install -e ".[dev]"

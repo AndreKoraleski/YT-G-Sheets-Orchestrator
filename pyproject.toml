@@ -52,10 +52,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator"
-Documentation = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator#readme"
-Repository = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator"
-Issues = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator/issues"
+Homepage = "https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator"
+Documentation = "https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator#readme"
+Repository = "https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator"
+Issues = "https://github.com/AndreKoraleski/YT-G-Sheets-Orchestrator/issues"
 
 [project.scripts]
 yt-gsheet-orc = "orc.__main__:main"
