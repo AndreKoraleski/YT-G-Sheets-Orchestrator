@@ -1,19 +1,18 @@
 """
-Módulo de inicialização para o pacote orc.
+Gateway para acesso ao Google Sheets.
 
-Este módulo importa e expõe:
+Este módulo encapsula todas as operações de leitura e escrita na API do Google Sheets,
+fornecendo uma interface unificada e com retry automático.
 
-- Config: Classe de configuração para o trabalhador ORC. Uso opcional, pois as configurações podem ser carregadas diretamente das variáveis de ambiente.
-- gateway: Módulo com todas as operações de acesso ao Google Sheets
+Módulos:
+    - connection: Conexão e obtenção de spreadsheets
+    - worksheet: Gerenciamento de abas (worksheets)
+    - operations: Operações CRUD em linhas
 """
 
-from .config import Config
-from . import gateway
-
-from .gateway import (
-    get_spreadsheet,
-    get_worksheet,
-    get_header_mapping,
+from .connection import get_spreadsheet
+from .worksheet import get_worksheet, get_header_mapping
+from .operations import (
     get_column_values,
     pop_first_row_by_columns,
     select_first_by_columns,
@@ -27,13 +26,14 @@ from .gateway import (
     update_row,
     delete_row,
     move_row,
+)
+from .leader import (
     try_acquire_leadership,
     release_leadership,
 )
 
+
 __all__ = [
-    'Config',
-    'gateway',
     'get_spreadsheet',
     'get_worksheet',
     'get_header_mapping',

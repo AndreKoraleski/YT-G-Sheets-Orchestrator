@@ -8,7 +8,9 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "python-dotenv (>=1.2.1,<2.0.0)"
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "gspread (>=6.2.1,<7.0.0)",
+    "google-auth (>=2.43.0,<3.0.0)"
 ]
 
 [tool.poetry]
@@ -17,3 +19,9 @@ packages = [{include = "orc", from = "src"}]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)",
+    "pytest-cov (>=7.0.0,<8.0.0)"
+]
