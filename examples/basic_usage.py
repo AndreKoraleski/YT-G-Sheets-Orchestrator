@@ -5,7 +5,6 @@ Este script demonstra como configurar e executar um worker
 que processa vídeos do YouTube de forma distribuída.
 """
 
-import os
 import time
 from dotenv import load_dotenv
 from orc import Config, Orchestrator

@@ -7,7 +7,6 @@ Demonstra integração com outros serviços e tratamento de erros.
 import os
 import json
 import logging
-from typing import Optional
 from datetime import datetime
 from dotenv import load_dotenv
 from orc import Config, Orchestrator
