@@ -1,27 +1,122 @@
-[project]
-name = "yt_gsheet_lite_orc"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "AndreKoraleski",email = "andrekorale@gmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.14"
-dependencies = [
-    "python-dotenv (>=1.2.1,<2.0.0)",
-    "gspread (>=6.2.1,<7.0.0)",
-    "google-auth (>=2.43.0,<3.0.0)"
-]
-
-[tool.poetry]
-packages = [{include = "orc", from = "src"}]
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[dependency-groups]
-dev = [
-    "pytest (>=9.0.2,<10.0.0)",
-    "pytest-cov (>=7.0.0,<8.0.0)"
+[project]
+name = "yt-gsheet-orchestrator"
+version = "0.1.0"
+description = "Sistema de orquestração distribuída para processar playlists e canais do YouTube usando Google Sheets como camada de coordenação"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Andre Koraleski", email = "andrekorale@gmail.com"}
 ]
+keywords = [
+    "youtube",
+    "google-sheets",
+    "orchestration",
+    "distributed",
+    "task-queue",
+    "yt-dlp",
+    "metadata",
+    "pipeline"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "gspread>=6.0.0",
+    "google-auth>=2.0.0",
+    "yt-dlp>=2024.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator"
+Documentation = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator#readme"
+Repository = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator"
+Issues = "https://github.com/AndreKoraleski/yt-gsheet-orchestrator/issues"
+
+[project.scripts]
+yt-gsheet-orc = "orc.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orc"]
+
+[tool.hatch.version]
+path = "src/orc/__version__.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+
+[tool.coverage.run]
+source = ["src/orc"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports
+"tests/*" = ["B008"]  # function calls in argument defaults
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true

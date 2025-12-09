@@ -31,6 +31,7 @@ from .leader import (
     try_acquire_leadership,
     release_leadership,
 )
+from ._retry import configure_rate_limiting, update_active_workers
 
 
 __all__ = [
@@ -52,4 +53,6 @@ __all__ = [
     'move_row',
     'try_acquire_leadership',
     'release_leadership',
+    'configure_rate_limiting',
+    'update_active_workers',
 ]

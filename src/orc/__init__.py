@@ -1,55 +1,21 @@
 """
-Módulo de inicialização para o pacote orc.
+YT G-Sheets Orchestrator
 
-Este módulo importa e expõe:
+Sistema de orquestração distribuída para processar playlists e canais do YouTube 
+usando Google Sheets como camada de coordenação.
 
-- Config: Classe de configuração para o trabalhador ORC. Uso opcional, pois as configurações podem ser carregadas diretamente das variáveis de ambiente.
-- gateway: Módulo com todas as operações de acesso ao Google Sheets
+Este módulo expõe as principais classes para uso externo:
+
+- Config: Classe de configuração para o trabalhador ORC
+- Orchestrator: Orquestrador principal para processamento de tasks
 """
 
+from .__version__ import __version__
 from .config import Config
-from . import gateway
-
-from .gateway import (
-    get_spreadsheet,
-    get_worksheet,
-    get_header_mapping,
-    get_column_values,
-    pop_first_row_by_columns,
-    select_first_by_columns,
-    select_all_by_columns,
-    append_row,
-    append_rows,
-    get_row,
-    get_rows,
-    get_rows_by_numbers,
-    get_next_valid_row,
-    update_row,
-    delete_row,
-    move_row,
-    try_acquire_leadership,
-    release_leadership,
-)
+from .orchestrator import Orchestrator
 
 __all__ = [
+    '__version__',
     'Config',
-    'gateway',
-    'get_spreadsheet',
-    'get_worksheet',
-    'get_header_mapping',
-    'get_column_values',
-    'pop_first_row_by_columns',
-    'select_first_by_columns',
-    'select_all_by_columns',
-    'append_row',
-    'append_rows',
-    'get_row',
-    'get_rows',
-    'get_rows_by_numbers',
-    'get_next_valid_row',
-    'update_row',
-    'delete_row',
-    'move_row',
-    'try_acquire_leadership',
-    'release_leadership',
+    'Orchestrator',
 ]

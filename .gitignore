@@ -215,5 +215,26 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Test Credentials
-*.json
+# Service Account Credentials (Google Cloud)
+*-service-account.json
+service-account*.json
+yt-g-sheets-orc-*.json
+
+# Local development files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.whl
+
+# Results/Output folders
+results/
+output/
+downloads/
+
+# IDE specific
+.idea/
+*.iml
