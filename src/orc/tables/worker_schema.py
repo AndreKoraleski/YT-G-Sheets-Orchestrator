@@ -1,9 +1,8 @@
 import json
 import uuid
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass, field
-
 
 # Constantes para a tabela de workers
 WORKER_TABLE_NAME = "Workers"
@@ -13,7 +12,7 @@ WORKER_TABLE_HEADER = [
     "Último Heartbeat",
     "Status",
     "Tarefas Processadas",
-    "Fontes Processadas"
+    "Fontes Processadas",
 ]
 
 
@@ -30,6 +29,7 @@ class WorkerEntry:
         status (str): O status atual do worker (e.g., "ACTIVE", "INACTIVE").
         processed_tasks (int): Número de tarefas processadas pelo worker.
     """
+
     worker_name: str
     _worker_id: str = field(init=False)
     last_heartbeat: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -65,7 +65,7 @@ class WorkerEntry:
         path.mkdir(parents=True, exist_ok=True)
         file_path = path / "worker_id.json"
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 return json.load(f)["worker_id"]
         except (FileNotFoundError, KeyError, json.JSONDecodeError):
             new_id = str(uuid.uuid4())
@@ -81,5 +81,5 @@ class WorkerEntry:
             self.last_heartbeat,
             self.status,
             str(self.processed_tasks),
-            str(self.processed_sources)
+            str(self.processed_sources),
         ]

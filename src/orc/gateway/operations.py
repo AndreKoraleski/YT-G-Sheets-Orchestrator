@@ -5,15 +5,11 @@ from gspread import Worksheet
 
 from ._retry import retry
 
-
 logger = logging.getLogger(__name__)
 
 
 def _verify_ownership(
-        worksheet: Worksheet,
-        row_number: int,
-        claim_column_index: int | None,
-        claim_value: str | None
+    worksheet: Worksheet, row_number: int, claim_column_index: int | None, claim_value: str | None
 ) -> bool:
     """
     Verifica se a linha ainda pertence ao worker (claim) antes de realizar uma operação crítica.
@@ -41,13 +37,13 @@ def _verify_ownership(
         if current_owner != claim_value:
             logger.warning(
                 "Conflito de posse na linha %d da aba '%s'. Esperado: '%s', Encontrado: '%s'. Operação cancelada.",
-                row_number, 
-                worksheet.title, 
-                claim_value, 
-                current_owner
+                row_number,
+                worksheet.title,
+                claim_value,
+                current_owner,
             )
             return False
-            
+
         return True
     except Exception as e:
         logger.error(
@@ -55,14 +51,14 @@ def _verify_ownership(
             row_number,
             worksheet.title,
             str(e),
-            exc_info=True
+            exc_info=True,
         )
         return False
 
 
 def get_column_values(
-        worksheet: Worksheet,
-        column_index: int,
+    worksheet: Worksheet,
+    column_index: int,
 ) -> list[str]:
     """
     Retorna todos os valores de uma coluna específica.
@@ -80,11 +76,11 @@ def get_column_values(
 
 
 def pop_first_row_by_columns(
-        worksheet: Worksheet,
-        mapping: dict[str, int],
-        column_filters: dict[str, str],
-        claim_column: str,
-        claim_value: str,
+    worksheet: Worksheet,
+    mapping: dict[str, int],
+    column_filters: dict[str, str],
+    claim_column: str,
+    claim_value: str,
 ) -> tuple[int, list[str]] | None:
     """
     Busca a primeira linha que satisfaz os filtros E não tem dono,
@@ -109,10 +105,10 @@ def pop_first_row_by_columns(
         return None
 
     # Tenta X vezes antes de desistir (para lidar com disputas de escrita)
-    for attempt in range(5):
+    for _attempt in range(5):
         # 1. READ: Baixa dados para encontrar candidato
         rows = retry(lambda: worksheet.get_all_values())
-        
+
         candidate_row_num = -1
         candidate_row_data = []
 
@@ -128,7 +124,7 @@ def pop_first_row_by_columns(
                 if col_idx >= len(row) or row[col_idx] != val:
                     match = False
                     break
-            
+
             if not match:
                 continue
 
@@ -141,13 +137,17 @@ def pop_first_row_by_columns(
             candidate_row_num = i
             candidate_row_data = row
             break
-        
+
         if candidate_row_num == -1:
             return None  # Nenhuma tarefa disponível
 
         # 2. CLAIM: Tenta marcar a linha
         try:
-            retry(lambda: worksheet.update_cell(candidate_row_num, claim_col_index + 1, claim_value))
+            retry(
+                lambda row_num=candidate_row_num: worksheet.update_cell(
+                    row_num, claim_col_index + 1, claim_value
+                )
+            )
         except Exception:
             continue  # Erro de escrita, tenta próxima
 
@@ -158,18 +158,18 @@ def pop_first_row_by_columns(
                 candidate_row_data[claim_col_index] = claim_value
             elif len(candidate_row_data) == claim_col_index:
                 candidate_row_data.append(claim_value)
-                
+
             return candidate_row_num, candidate_row_data
-        
+
         # Se falhou, loop continua
 
     return None
 
 
 def select_first_by_columns(
-        worksheet: Worksheet,
-        mapping: dict[str, int],
-        column_filters: dict[str, str],
+    worksheet: Worksheet,
+    mapping: dict[str, int],
+    column_filters: dict[str, str],
 ) -> tuple[int, list[str]] | None:
     """
     Seleciona a primeira linha da aba que satisfaça todos os filtros de coluna,
@@ -226,9 +226,9 @@ def select_first_by_columns(
 
 
 def select_all_by_columns(
-        worksheet: Worksheet,
-        mapping: dict[str, int],
-        column_filters: dict[str, str],
+    worksheet: Worksheet,
+    mapping: dict[str, int],
+    column_filters: dict[str, str],
 ) -> list[tuple[int, list[str]]]:
     """
     Seleciona todas as linhas da aba que satisfaçam todos os filtros de coluna,
@@ -282,8 +282,8 @@ def select_all_by_columns(
 
 
 def append_row(
-        worksheet: Worksheet,
-        row: list[str],
+    worksheet: Worksheet,
+    row: list[str],
 ) -> None:
     """
     Adiciona uma única linha ao final da aba.
@@ -307,8 +307,8 @@ def append_row(
 
 
 def append_rows(
-        worksheet: Worksheet,
-        rows: list[list[str]],
+    worksheet: Worksheet,
+    rows: list[list[str]],
 ) -> None:
     """
     Adiciona múltiplas linhas ao final da aba em uma única operação.
@@ -340,8 +340,8 @@ def append_rows(
 
 
 def get_row(
-        worksheet: Worksheet,
-        row_number: int,
+    worksheet: Worksheet,
+    row_number: int,
 ) -> list[str] | None:
     """
     Lê o conteúdo de uma linha específica da aba pelo número da linha.
@@ -375,9 +375,9 @@ def get_row(
 
 
 def get_rows(
-        worksheet: Worksheet,
-        start_row: int,
-        end_row: int,
+    worksheet: Worksheet,
+    start_row: int,
+    end_row: int,
 ) -> list[list[str]]:
     """
     Lê um intervalo de linhas da aba.
@@ -409,8 +409,8 @@ def get_rows(
 
 
 def get_rows_by_numbers(
-        worksheet: Worksheet,
-        row_numbers: list[int],
+    worksheet: Worksheet,
+    row_numbers: list[int],
 ) -> list[list[str]]:
     """
     Lê múltiplas linhas específicas da aba a partir de uma lista de números de linha.
@@ -443,7 +443,7 @@ def get_rows_by_numbers(
 
 
 def get_next_valid_row(
-        worksheet: Worksheet,
+    worksheet: Worksheet,
 ) -> tuple[int, list[str]] | None:
     """
     Obtém a próxima linha válida (não vazia) da aba, ignorando o cabeçalho
@@ -484,11 +484,11 @@ def get_next_valid_row(
 
 
 def update_row(
-        worksheet: Worksheet,
-        row_number: int,
-        new_row: list[str],
-        claim_column_index: int | None = None,
-        claim_value: str | None = None,
+    worksheet: Worksheet,
+    row_number: int,
+    new_row: list[str],
+    claim_column_index: int | None = None,
+    claim_value: str | None = None,
 ) -> bool:
     """
     Substitui o conteúdo completo de uma linha por novos valores.
@@ -505,7 +505,7 @@ def update_row(
     """
     if not _verify_ownership(worksheet, row_number, claim_column_index, claim_value):
         return False
-    
+
     logger.debug(
         "Atualizando a linha %d da aba '%s' para: %s",
         row_number,
@@ -525,10 +525,10 @@ def update_row(
 
 
 def delete_row(
-        worksheet: Worksheet,
-        row_number: int,
-        claim_column_index: int | None = None,
-        claim_value: str | None = None,
+    worksheet: Worksheet,
+    row_number: int,
+    claim_column_index: int | None = None,
+    claim_value: str | None = None,
 ) -> bool:
     """
     "Apaga" uma linha da aba tornando todas as células dessa linha vazias
@@ -585,11 +585,11 @@ def delete_row(
 
 
 def move_row(
-        source_ws: Worksheet,
-        target_ws: Worksheet,
-        row_number: int,
-        claim_column_index: int | None = None,
-        claim_value: str | None = None,
+    source_ws: Worksheet,
+    target_ws: Worksheet,
+    row_number: int,
+    claim_column_index: int | None = None,
+    claim_value: str | None = None,
 ) -> list[str] | None:
     """
     Copia a linha para o destino e realiza SOFT DELETE na origem (limpa conteúdo).
@@ -618,7 +618,12 @@ def move_row(
     if not _verify_ownership(source_ws, row_number, claim_column_index, claim_value):
         return None
 
-    logger.debug("Movendo linha %d de '%s' para '%s' (Soft Delete).", row_number, source_ws.title, target_ws.title)
+    logger.debug(
+        "Movendo linha %d de '%s' para '%s' (Soft Delete).",
+        row_number,
+        source_ws.title,
+        target_ws.title,
+    )
 
     # 1. Ler dados
     row_values = retry(lambda: source_ws.row_values(row_number))
@@ -640,12 +645,14 @@ def move_row(
         # Tenta pegar número de colunas para criar a linha vazia exata
         col_count = len(row_values)
         empty_row = [""] * col_count
-        
+
         cell_range = f"{row_number}:{row_number}"
         retry(lambda: source_ws.update(cell_range, [empty_row]))
     except Exception:
         # Rollback simples: tenta remover do destino para não duplicar
-        logger.error("Falha ao limpar linha %d. Tentando rollback no destino.", row_number, exc_info=True)
+        logger.error(
+            "Falha ao limpar linha %d. Tentando rollback no destino.", row_number, exc_info=True
+        )
         try:
             last = retry(lambda: target_ws.row_count)
             retry(lambda: target_ws.delete_rows(last))

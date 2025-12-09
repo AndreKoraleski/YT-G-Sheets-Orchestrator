@@ -4,7 +4,6 @@ from gspread import Spreadsheet, Worksheet, WorksheetNotFound
 
 from ._retry import retry
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +51,9 @@ def get_header_mapping(worksheet: Worksheet) -> dict[str, int]:
     return mapping
 
 
-def _create_worksheet(spreadsheet: Spreadsheet, worksheet_name: str, header: list[str]) -> Worksheet:
+def _create_worksheet(
+    spreadsheet: Spreadsheet, worksheet_name: str, header: list[str]
+) -> Worksheet:
     """
     Cria uma nova aba em uma planilha do Google Sheets com um cabeçalho especificado.
 
@@ -60,19 +61,27 @@ def _create_worksheet(spreadsheet: Spreadsheet, worksheet_name: str, header: lis
         spreadsheet (Spreadsheet): A planilha onde a nova aba será criada.
         worksheet_name (str): Nome da nova aba a ser criada.
         header (list[str]): Lista de strings representando o cabeçalho da nova aba.
-    
+
     Returns:
         Worksheet: A aba criada.
     """
     logger.debug("Criando a aba '%s' na planilha '%s'.", worksheet_name, spreadsheet.title)
-    worksheet = retry(lambda: spreadsheet.add_worksheet(title=worksheet_name, rows="100", cols=str(len(header))))
+    worksheet = retry(
+        lambda: spreadsheet.add_worksheet(title=worksheet_name, rows="100", cols=str(len(header)))
+    )
     if header:
         retry(lambda: worksheet.insert_row(header, index=1))
     logger.info("Aba criada com sucesso: %s", worksheet.title)
     return worksheet
 
 
-def get_worksheet(spreadsheet: Spreadsheet, worksheet_name: str, header: list[str], replace_header: bool, create: bool) -> Worksheet:
+def get_worksheet(
+    spreadsheet: Spreadsheet,
+    worksheet_name: str,
+    header: list[str],
+    replace_header: bool,
+    create: bool,
+) -> Worksheet:
     """
     Obtém uma aba de uma planilha do Google Sheets, com opções para validar ou criar a aba.
 
@@ -86,7 +95,7 @@ def get_worksheet(spreadsheet: Spreadsheet, worksheet_name: str, header: list[st
     Returns:
         Worksheet: A aba obtida ou criada.
     """
-    
+
     try:
         logger.debug("Obtendo a aba '%s' da planilha '%s'.", worksheet_name, spreadsheet.title)
         worksheet = retry(lambda: spreadsheet.worksheet(worksheet_name))
@@ -96,9 +105,11 @@ def get_worksheet(spreadsheet: Spreadsheet, worksheet_name: str, header: list[st
 
         logger.info("Aba obtida com sucesso: %s", worksheet.title)
         return worksheet
-    
+
     except WorksheetNotFound:
-        logger.warning("Aba '%s' não encontrada na planilha '%s'.", worksheet_name, spreadsheet.title)
+        logger.warning(
+            "Aba '%s' não encontrada na planilha '%s'.", worksheet_name, spreadsheet.title
+        )
         if create:
             return _create_worksheet(spreadsheet, worksheet_name, header)
         raise

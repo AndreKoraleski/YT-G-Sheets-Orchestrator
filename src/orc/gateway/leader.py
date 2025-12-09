@@ -1,14 +1,22 @@
-import time
 import logging
+import time
+
 from gspread import Spreadsheet
 
-from .worksheet import get_worksheet, get_header_mapping
-from .operations import update_row, append_row, select_first_by_columns, get_row
+from .operations import append_row, get_row, select_first_by_columns, update_row
+from .worksheet import get_header_mapping, get_worksheet
 
 logger = logging.getLogger(__name__)
 
 ELECTION_SHEET_NAME = "Eleição de Líderes"
-ELECTION_HEADER = ["Nome da Eleição", "ID do Líder", "Timestamp de Aquisição", "Timestamp de Expiração", "Status"]
+ELECTION_HEADER = [
+    "Nome da Eleição",
+    "ID do Líder",
+    "Timestamp de Aquisição",
+    "Timestamp de Expiração",
+    "Status",
+]
+
 
 def _ensure_election_worksheet(spreadsheet: Spreadsheet) -> None:
     """
@@ -22,14 +30,12 @@ def _ensure_election_worksheet(spreadsheet: Spreadsheet) -> None:
         worksheet_name=ELECTION_SHEET_NAME,
         header=ELECTION_HEADER,
         replace_header=False,
-        create=True
+        create=True,
     )
 
+
 def try_acquire_leadership(
-        spreadsheet: Spreadsheet,
-        election_name: str,
-        worker_id: str,
-        ttl_seconds: int = 60
+    spreadsheet: Spreadsheet, election_name: str, worker_id: str, ttl_seconds: int = 60
 ) -> bool:
     """
     Tenta adquirir a liderança para uma eleição específica.
@@ -39,7 +45,7 @@ def try_acquire_leadership(
         election_name (str): O nome da eleição para a qual o líder está sendo adquirido.
         worker_id (str): O identificador único do trabalhador que está tentando adquirir a liderança.
         ttl_seconds (int): Tempo em segundos para o qual a liderança é válida antes de expirar.
-    
+
     Returns:
         bool: True se a liderança foi adquirida com sucesso, False caso contrário.
     """
@@ -66,7 +72,7 @@ def try_acquire_leadership(
 
         append_row(ws, new_row)
         return True
-    
+
     row_number, row_data = result
 
     try:
@@ -80,17 +86,30 @@ def try_acquire_leadership(
         should_write = False
 
         if current_leader == worker_id:
-            logger.debug("Worker '%s' já é o líder da eleição '%s'. Renovando liderança.", worker_id, election_name)
+            logger.debug(
+                "Worker '%s' já é o líder da eleição '%s'. Renovando liderança.",
+                worker_id,
+                election_name,
+            )
             should_write = True
 
         elif current_expiration < now or row_data[mapping["Status"]] != "ACTIVE":
-            logger.info("Liderança expirada ou inativa para a eleição '%s'. Worker '%s' adquirindo liderança.", election_name, worker_id)
+            logger.info(
+                "Liderança expirada ou inativa para a eleição '%s'. Worker '%s' adquirindo liderança.",
+                election_name,
+                worker_id,
+            )
             should_write = True
 
         else:
-            logger.info("Eleição '%s' já possui líder ativo: '%s'. Worker '%s' não pode adquirir liderança.", election_name, current_leader, worker_id)
+            logger.info(
+                "Eleição '%s' já possui líder ativo: '%s'. Worker '%s' não pode adquirir liderança.",
+                election_name,
+                current_leader,
+                worker_id,
+            )
             return False
-        
+
         if should_write:
             row_data[mapping["ID do Líder"]] = worker_id
             row_data[mapping["Timestamp de Aquisição"]] = f"{now:.6f}"
@@ -98,24 +117,30 @@ def try_acquire_leadership(
             row_data[mapping["Status"]] = "ACTIVE"
 
             update_row(ws, row_number, row_data)
-            
+
             time.sleep(1.0)
             check_row = get_row(ws, row_number)
             if check_row and check_row[mapping["ID do Líder"]] == worker_id:
-                logger.info("Worker '%s' adquiriu liderança da eleição '%s' com sucesso.", worker_id, election_name)
+                logger.info(
+                    "Worker '%s' adquiriu liderança da eleição '%s' com sucesso.",
+                    worker_id,
+                    election_name,
+                )
                 return True
-            
+
         return False
-    
+
     except Exception as e:
-        logger.error("Erro ao tentar adquirir liderança para a eleição '%s': %s", election_name, str(e), exc_info=True)
+        logger.error(
+            "Erro ao tentar adquirir liderança para a eleição '%s': %s",
+            election_name,
+            str(e),
+            exc_info=True,
+        )
         return False
-    
-def release_leadership(
-        spreadsheet: Spreadsheet,
-        election_name: str,
-        worker_id: str
-) -> None:
+
+
+def release_leadership(spreadsheet: Spreadsheet, election_name: str, worker_id: str) -> None:
     """
     Libera a liderança de uma eleição específica voluntariamente.
     Isso permite que outros workers assumam imediatamente sem esperar o TTL expirar.
@@ -137,28 +162,38 @@ def release_leadership(
 
         if result:
             row_number, row_data = result
-            
+
             current_leader = row_data[mapping["ID do Líder"]]
 
             if current_leader == worker_id:
-                logger.info("Worker '%s' liberando voluntariamente a liderança de '%s'...", worker_id, election_name)
+                logger.info(
+                    "Worker '%s' liberando voluntariamente a liderança de '%s'...",
+                    worker_id,
+                    election_name,
+                )
 
                 row_data[mapping["Status"]] = "RELEASED"
-                row_data[mapping["Timestamp de Expiração"]] = "0" 
+                row_data[mapping["Timestamp de Expiração"]] = "0"
 
                 update_row(ws, row_number, row_data)
-                
+
                 logger.info("Liderança de '%s' liberada com sucesso.", election_name)
             else:
                 logger.warning(
                     "Tentativa de liberar liderança falhou: Worker '%s' não é o líder atual de '%s' (Atual: '%s').",
-                    worker_id, election_name, current_leader
+                    worker_id,
+                    election_name,
+                    current_leader,
                 )
         else:
-            logger.warning("Tentativa de liberar liderança para eleição inexistente: '%s'.", election_name)
+            logger.warning(
+                "Tentativa de liberar liderança para eleição inexistente: '%s'.", election_name
+            )
 
     except Exception as e:
         logger.error(
-            "Erro ao tentar liberar liderança para a eleição '%s': %s", 
-            election_name, str(e), exc_info=True
+            "Erro ao tentar liberar liderança para a eleição '%s': %s",
+            election_name,
+            str(e),
+            exc_info=True,
         )

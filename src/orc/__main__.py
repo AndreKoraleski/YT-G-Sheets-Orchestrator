@@ -1,6 +1,7 @@
 """Ponto de entrada para execução do módulo como script."""
 
 import sys
+
 from .config import Config
 from .orchestrator import Orchestrator
 

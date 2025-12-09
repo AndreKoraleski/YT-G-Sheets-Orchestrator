@@ -1,22 +1,21 @@
 import logging
 
-from gspread import Client, Spreadsheet, SpreadsheetNotFound
 from google.oauth2.service_account import Credentials
+from gspread import Client, Spreadsheet, SpreadsheetNotFound
 
 from ._retry import retry
-
 
 logger = logging.getLogger(__name__)
 
 SCOPES = [
-    'https://www.googleapis.com/auth/spreadsheets',
+    "https://www.googleapis.com/auth/spreadsheets",
 ]
 
 
 def _connect_service_account(service_account_file: str) -> Client:
     """
     Conecta-se à API do Google Sheets usando um arquivo de conta de serviço.
-    
+
     Args:
         service_account_file (str): Caminho para o arquivo de conta de serviço JSON.
 

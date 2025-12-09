@@ -6,8 +6,9 @@ Define estruturas de dados para as 3 tabelas do pipeline:
 - Tasks History: Registro de tarefas completadas com sucesso
 - Tasks DLQ: Dead Letter Queue para tarefas que falharam
 """
-from datetime import datetime
+
 from dataclasses import dataclass, field
+from datetime import datetime
 
 # ============================================================================
 # TASKS
@@ -24,7 +25,7 @@ TASKS_TABLE_HEADER = [
     "Timestamp de Reivindicação",
     "Timestamp de Conclusão",
     "Status",
-    "Worker Atribuído"
+    "Worker Atribuído",
 ]
 
 
@@ -32,10 +33,10 @@ TASKS_TABLE_HEADER = [
 class TaskEntry:
     """
     Estrutura de dados para uma tarefa na fila de processamento.
-    
+
     Representa uma unidade de trabalho (ex: vídeo) a ser processada por um worker.
     Armazena metadados, timestamps de lifecycle e ownership via claim column.
-    
+
     Attributes:
         task_id (str): Identificador único da tarefa.
         source_id (str): ID da fonte que gerou esta tarefa.
@@ -48,6 +49,7 @@ class TaskEntry:
         status (str): Estado atual (PENDING, CLAIMED, COMPLETED, FAILED).
         assigned_worker (str): Nome do worker que reivindicou (claim column).
     """
+
     task_id: str
     source_id: str
     url: str
@@ -58,36 +60,36 @@ class TaskEntry:
     completed_at: str = ""
     status: str = "PENDING"
     assigned_worker: str = ""
-    
+
     def claim(self, worker_name: str) -> None:
         """
         Reivindica a tarefa para um worker específico.
-        
+
         Args:
             worker_name (str): Nome do worker que está reivindicando a tarefa.
         """
         self.assigned_worker = worker_name
         self.claimed_at = datetime.now().isoformat()
         self.status = "CLAIMED"
-    
+
     def complete(self) -> None:
         """
         Marca a tarefa como completada com sucesso.
         """
         self.completed_at = datetime.now().isoformat()
         self.status = "COMPLETED"
-    
+
     def fail(self) -> None:
         """
         Marca a tarefa como falhada.
         """
         self.completed_at = datetime.now().isoformat()
         self.status = "FAILED"
-    
+
     def to_row(self) -> list[str]:
         """
         Converte para lista de strings no formato da tabela.
-        
+
         Returns:
             list[str]: Lista de valores para inserir no Google Sheets.
         """
@@ -101,17 +103,17 @@ class TaskEntry:
             self.claimed_at,
             self.completed_at,
             self.status,
-            self.assigned_worker
+            self.assigned_worker,
         ]
-    
+
     @classmethod
     def from_row(cls, row_data: list[str]) -> "TaskEntry":
         """
         Reconstrói instância a partir de dados do Sheets.
-        
+
         Args:
             row_data (list[str]): Lista de valores de uma linha do Google Sheets.
-            
+
         Returns:
             TaskEntry: Instância reconstruída.
         """
@@ -125,7 +127,7 @@ class TaskEntry:
             claimed_at=row_data[6] if len(row_data) > 6 else "",
             completed_at=row_data[7] if len(row_data) > 7 else "",
             status=row_data[8] if len(row_data) > 8 else "PENDING",
-            assigned_worker=row_data[9] if len(row_data) > 9 else ""
+            assigned_worker=row_data[9] if len(row_data) > 9 else "",
         )
 
 
@@ -152,33 +154,34 @@ TASKS_DLQ_TABLE_HEADER = TASKS_TABLE_HEADER + ["Mensagem de Erro"]
 class TaskDLQEntry(TaskEntry):
     """
     Tarefa que falhou durante processamento (Dead Letter Queue).
-    
+
     Herda todos os campos de TaskEntry e adiciona mensagem de erro.
     Usada para rastreabilidade e debugging de falhas.
-    
+
     Attributes:
         error_message: Descrição do erro que causou a falha.
     """
+
     error_message: str = ""
-    
+
     def to_row(self) -> list[str]:
         """
         Converte para lista incluindo mensagem de erro.
-        
+
         Returns:
             list[str]: Lista de valores com erro no final.
         """
         return super().to_row() + [self.error_message]
-    
+
     @classmethod
     def from_task(cls, task: TaskEntry, error_message: str) -> "TaskDLQEntry":
         """
         Cria DLQ entry a partir de TaskEntry falhada.
-        
+
         Args:
             task: TaskEntry que falhou
             error_message: Mensagem de erro
-            
+
         Returns:
             TaskDLQEntry
         """
@@ -193,9 +196,9 @@ class TaskDLQEntry(TaskEntry):
             completed_at=task.completed_at or datetime.now().isoformat(),
             status="FAILED",
             assigned_worker=task.assigned_worker,
-            error_message=error_message
+            error_message=error_message,
         )
-    
+
     @classmethod
     def from_row(cls, row_data: list[str]) -> "TaskDLQEntry":
         """Deserializa incluindo campo de erro."""
