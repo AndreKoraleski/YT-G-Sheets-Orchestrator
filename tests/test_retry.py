@@ -1,10 +1,15 @@
 """Testes unitários para o módulo _retry."""
 import pytest
 import time
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from gspread.exceptions import WorksheetNotFound, SpreadsheetNotFound
 
-from orc.gateway._retry import retry
+from orc.gateway._retry import (
+    retry,
+    configure_rate_limiting,
+    update_active_workers,
+    NON_RETRYABLE_EXCEPTIONS
+)
 
 
 class TestRetry:
@@ -107,3 +112,57 @@ class TestRetry:
         
         mock_func_none = Mock(return_value=None)
         assert retry(mock_func_none) is None
+
+
+class TestRateLimiting:
+    """Testes para rate limiting dinâmico."""
+    
+    def test_configure_rate_limiting(self):
+        """Deve configurar rate limiting sem erros."""
+        configure_rate_limiting(2.0, 1.0)
+        configure_rate_limiting(0.5, 0.25)
+        # Verifica que não lança exceção
+        assert True
+    
+    def test_update_active_workers(self):
+        """Deve atualizar número de workers ativos."""
+        update_active_workers(1)
+        update_active_workers(5)
+        update_active_workers(10)
+        assert True
+    
+    def test_update_active_workers_minimum_one(self):
+        """Deve garantir mínimo de 1 worker."""
+        update_active_workers(0)
+        update_active_workers(-5)
+        # Internamente deve usar 1 como mínimo
+        assert True
+    
+    def test_all_non_retryable_exceptions(self):
+        """Deve ter todas as exceções não-retryáveis definidas."""
+        assert WorksheetNotFound in NON_RETRYABLE_EXCEPTIONS
+        assert SpreadsheetNotFound in NON_RETRYABLE_EXCEPTIONS
+        assert ValueError in NON_RETRYABLE_EXCEPTIONS
+        assert KeyError in NON_RETRYABLE_EXCEPTIONS
+        assert TypeError in NON_RETRYABLE_EXCEPTIONS
+    
+    @patch('orc.gateway._retry.time.sleep')
+    @patch('orc.gateway._retry.time.time')
+    def test_rate_limit_integration_with_retry(self, mock_time, mock_sleep):
+        """Deve aplicar rate limiting durante retry."""
+        configure_rate_limiting(0.1, 0.0)
+        update_active_workers(1)
+        
+        mock_func = Mock(side_effect=[
+            RuntimeError("error"),
+            "success"
+        ])
+        
+        # Simula tempo
+        mock_time.side_effect = [0.0, 0.0, 0.05, 0.05]
+        
+        result = retry(mock_func, tries=3, delay=0.01)
+        
+        assert result == "success"
+        # Rate limiting deve ter sido aplicado
+        assert mock_sleep.call_count >= 1

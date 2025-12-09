@@ -78,7 +78,8 @@ class TestVerifyOwnership:
         result = _verify_ownership(mock_worksheet, 2, 2, 'worker1')
         
         assert result is True
-        mock_sleep.assert_called_once_with(1.0)
+        # Verifica que sleep foi chamado (rate limiting + verificação)
+        assert mock_sleep.call_count >= 1
     
     @patch('orc.gateway.operations.time.sleep')
     def test_verify_ownership_failed(self, mock_sleep):
