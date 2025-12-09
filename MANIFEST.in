@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include src *.py
+recursive-exclude tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+exclude .env
+exclude .env.example
+exclude poetry.lock
+exclude yt-g-sheets-orc-*.json
