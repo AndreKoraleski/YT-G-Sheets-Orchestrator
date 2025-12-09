@@ -30,41 +30,40 @@ class VideoProcessor:
         self.processed_count = 0
         self.error_count = 0
 
-    def process(self, url: str) -> bool:
+    def process(self, url: str) -> None:
         """
         Processa um vídeo do YouTube.
 
         Args:
             url: URL do vídeo
 
-        Returns:
-            True se processado com sucesso, False caso contrário
+        Raises:
+            Exception: Se houver erro no processamento, a exceção será propagada
+                       para que o orchestrator possa mover a task para a DLQ.
+
+        Note:
+            Não capture exceções aqui! Deixe que o orchestrator faça isso.
+            Assim, erros serão automaticamente movidos para a DLQ com a
+            mensagem de erro completa.
         """
-        try:
-            logger.info(f"Iniciando processamento: {url}")
+        logger.info(f"Iniciando processamento: {url}")
 
-            # 1. Extrair ID do vídeo
-            video_id = self._extract_video_id(url)
-            logger.debug(f"Video ID: {video_id}")
+        # 1. Extrair ID do vídeo
+        video_id = self._extract_video_id(url)
+        logger.debug(f"Video ID: {video_id}")
 
-            # 2. Buscar metadados adicionais
-            metadata = self._fetch_metadata(video_id)
-            logger.debug(f"Metadata: {json.dumps(metadata, indent=2)}")
+        # 2. Buscar metadados adicionais
+        metadata = self._fetch_metadata(video_id)
+        logger.debug(f"Metadata: {json.dumps(metadata, indent=2)}")
 
-            # 3. Processar vídeo (exemplo: transcrição, análise, etc.)
-            result = self._process_video(video_id, metadata)
+        # 3. Processar vídeo (exemplo: transcrição, análise, etc.)
+        result = self._process_video(video_id, metadata)
 
-            # 4. Salvar resultados
-            self._save_results(video_id, result)
+        # 4. Salvar resultados
+        self._save_results(video_id, result)
 
-            self.processed_count += 1
-            logger.info(f"✅ Processado com sucesso: {url}")
-            return True
-
-        except Exception as e:
-            self.error_count += 1
-            logger.error(f"❌ Erro ao processar {url}: {e}", exc_info=True)
-            return False
+        self.processed_count += 1
+        logger.info(f"✅ Processado com sucesso: {url}")
 
     def _extract_video_id(self, url: str) -> str:
         """Extrai ID do vídeo da URL."""

@@ -24,8 +24,18 @@ def process_video(url: str) -> None:
 
     Args:
         url: URL do vídeo do YouTube a ser processado
+
+    Raises:
+        Exception: Se houver erro no processamento, a exceção será capturada
+                   pelo orchestrator e a task será movida para a DLQ com a
+                   mensagem de erro.
     """
     print(f"📹 Processando vídeo: {url}")
+
+    # IMPORTANTE: Se algo der errado, LEVANTE uma exceção!
+    # O orchestrator capturará e moverá para DLQ automaticamente
+    if not url.startswith("https://"):
+        raise ValueError(f"URL inválida: {url}")
 
     # Exemplo: Baixar metadados adicionais, transcrições, etc.
     # Exemplo: Fazer upload para S3, processar com IA, etc.

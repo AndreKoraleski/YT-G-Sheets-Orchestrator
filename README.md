@@ -102,8 +102,18 @@ orchestrator = Orchestrator(config)
 
 # Define callback de processamento de task
 def process_video(url: str) -> None:
+    """
+    IMPORTANTE: Propague exceções! O orchestrator capturará erros
+    automaticamente e moverá tasks falhadas para a DLQ com detalhes.
+    """
     print(f"Processando: {url}")
+    
+    # Se algo der errado, levante uma exceção
+    if not url.startswith("https://"):
+        raise ValueError(f"URL inválida: {url}")
+    
     # Sua lógica de processamento aqui
+    # Qualquer exceção será capturada e registrada na DLQ
 
 # Processa tasks em loop
 while orchestrator.process_next_task(process_video):
@@ -179,7 +189,12 @@ Isso previne esgotamento de quota da API enquanto permite que múltiplos workers
 
 - **Shutdown Gracioso**: Handlers de SIGINT/SIGTERM marcam workers como INACTIVE e liberam liderança
 - **Retry Automático**: Erros transientes são retentados com backoff exponencial
-- **Dead Letter Queue**: Falhas persistentes são movidas para DLQ com detalhes do erro
+- **Dead Letter Queue (DLQ)**: Sistema de captura de erros
+  - Qualquer exceção levantada no callback é automaticamente capturada
+  - Tasks/Sources falhadas são movidas para DLQ com mensagem de erro completa
+  - **IMPORTANTE**: Sempre propague exceções no seu callback - não as capture internamente
+  - O orchestrator garante que `str(e)` seja registrado na coluna de erro da DLQ
+  - Ideal para debugging: veja exatamente o que falhou e por quê
 - **Recuperação de Sessão**: Workers podem retomar sua sessão anterior ao reiniciar
 
 ### Extração de Metadados
