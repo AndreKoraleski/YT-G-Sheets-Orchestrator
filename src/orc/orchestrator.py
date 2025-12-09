@@ -128,13 +128,17 @@ class Orchestrator:
         Conta workers ativos e atualiza rate limiting dinâmico.
         """
         try:
-            from .gateway import get_column_values
+            from .gateway import get_column_values, get_header_mapping
 
-            # Busca coluna de Status
-            status_values = get_column_values(self.worker_table.worksheet, "Status")
+            # Busca o índice da coluna Status
+            header_mapping = get_header_mapping(self.worker_table.worksheet)
+            status_column_index = header_mapping["Status"]
 
-            # Conta quantos estão ACTIVE
-            active_count = sum(1 for status in status_values if status == "ACTIVE")
+            # Busca coluna de Status (get_column_values usa 1-based index)
+            status_values = get_column_values(self.worker_table.worksheet, status_column_index + 1)
+
+            # Conta quantos estão ACTIVE (ignora o header)
+            active_count = sum(1 for status in status_values[1:] if status == "ACTIVE")
 
             # Atualiza rate limiting global
             update_active_workers(active_count)
