@@ -238,3 +238,6 @@ downloads/
 # IDE specific
 .idea/
 *.iml
+
+# Orc specific
+data/
